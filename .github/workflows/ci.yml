@@ -1,0 +1,37 @@
+# This is the name that shows up in GitHub Actions tab
+name: Continuous Integration
+
+# WHEN to run this workflow
+on:
+  push:
+    branches: [ main, master ]    # Run when you push to main/master
+  pull_request:
+    branches: [ main, master ]    # Run when someone creates a pull request
+
+# WHAT to do (the actual work)
+jobs:
+  test:                          # Name this job "test"
+    runs-on: ubuntu-latest       # Use Ubuntu Linux virtual machine
+    
+    steps:                       # List of things to do in order
+    - uses: actions/checkout@v3  # Download your code from GitHub
+    
+    - name: Set up Python 3.9    # Install Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.9
+    
+    - name: Install dependencies  # Install required packages
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    
+    - name: Lint with flake8     # Check code style
+      run: |
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    
+    - name: Test with pytest     # Run your tests
+      run: |
+        pytest
